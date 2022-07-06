@@ -17,7 +17,7 @@ def validate_video_creation_data(data: Dict[str, object]):
     structure_error = _validate_payload_structure(data)
     if structure_error:
         return structure_error
-    date_format_error = _validate_date_format(data["date_published"])
+    date_format_error = _validate_date_format(data.get("date_published"))
     if date_format_error:
         return date_format_error
 
@@ -25,7 +25,7 @@ def validate_video_creation_data(data: Dict[str, object]):
 def validate_video_sections_data(data):
     if "sections" not in data:
         return SECTIONS_NOT_PROVIDED
-    sections_list = data["sections"]
+    sections_list = data.get("sections")
     if not all([isinstance(section, int) for section in sections_list]):
         return {"message": "Section id must be an integer."}
 

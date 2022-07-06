@@ -29,7 +29,7 @@ class Category(Resource):
     )
     def post(self):
         args = request.args
-        title = args["title"]
+        title = args.get("title")
         existing_category = CategoryModel.find_by_title(title)
         if existing_category:
             return {"message": "Category already exists"}, 409
@@ -66,7 +66,7 @@ class CategorySection(Resource):
         validation_result = validate_category_sections_data(data)
         if validation_result:
             return validation_result, 400
-        section_ids = data["sections"]
+        section_ids = data.get("sections")
         sections = SectionDAO.find_sections_by_ids(section_ids)
         note = ""
         if sections.count() != len(section_ids):
@@ -106,10 +106,10 @@ class UpdateCategory(Resource):
         if not category:
             return RESOURCE_NOT_FOUND, 404
 
-        if payload["title"] == category.title:
+        if payload.get("title") == category.title:
             return CATEGORY_TITLE_NOT_UPDATED, 400
 
-        updated_category = CategoryDAO.update_category(category, payload["title"])
+        updated_category = CategoryDAO.update_category(category, payload.get("title"))
         return map_to_dto(updated_category), 200
 
     @token_required

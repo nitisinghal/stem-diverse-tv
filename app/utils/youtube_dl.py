@@ -13,9 +13,9 @@ def youtube_dl_extract_info(video_id):
 
 def youtube_dl_extract_format(info, format_id):
     result = []
-    for i in info["formats"]:
-        if int(i["format_id"]) == format_id:
-            result.append(i["url"])
+    for i in info.get("formats"):
+        if int(i.get("format_id")) == format_id:
+            result.append(i.get("url"))
     if not result:
         result.append({"message": f"Requested format '{format_id}' is not available"})
     return result

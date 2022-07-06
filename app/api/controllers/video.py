@@ -48,21 +48,21 @@ class Video(Resource):
 
         if validation_result is not None:
             return validation_result
-        url = data["url"]
+        url = data.get("url")
         existing_video = VideoDAO.find_video_by_url(url)
         response = {"notes": []}
 
         # find authors from the list
-        authors = AuthorDAO.find_authors_by_ids(data["authors"])
-        if authors.count() != len(data["authors"]):
-            response["notes"].append(
+        authors = AuthorDAO.find_authors_by_ids(data.get("authors"))
+        if authors.count() != len(data.get("authors")):
+            response.get("notes").append(
                 "Some of the authors are not valid or they do not exist."
             )
 
         # find sections from the list
-        sections = SectionDAO.find_sections_by_ids(data["category_sections"])
-        if sections.count() != len(data["category_sections"]):
-            response["notes"].append(
+        sections = SectionDAO.find_sections_by_ids(data.get("category_sections"))
+        if sections.count() != len(data.get("category_sections")):
+            response.get("notes").append(
                 "Some of the sections are not valid or they do not exist."
             )
 
@@ -72,7 +72,7 @@ class Video(Resource):
 
         if existing_video:
             data["date_published"] = datetime.strptime(
-                data["date_published"], "%Y-%m-%d"
+                data.get("date_published"), "%Y-%m-%d"
             )
             existing_video.update(data)
             VideoDAO.replace_video_authors(existing_video, authors)
@@ -80,13 +80,13 @@ class Video(Resource):
             video = existing_video
         else:
             video = VideoDAO.create_video(
-                data["title"],
-                data["url"],
-                data["preview_url"],
-                datetime.strptime(data["date_published"], "%Y-%m-%d"),
-                data["source"],
-                data["channel"],
-                data["duration"],
+                data.get("title"),
+                data.get("url"),
+                data.get("preview_url"),
+                datetime.strptime(data.get("date_published"), "%Y-%m-%d"),
+                data.get("source"),
+                data.get("channel"),
+                data.get("duration"),
                 data.get("archived"),
                 data.get("free_to_reuse"),
                 data.get("authorized_to_reuse"),
@@ -110,7 +110,7 @@ class AddYoutubeVideo(Resource):
     @video_ns.expect(add_yt_video_model)
     def post(self):
         payload = request.json
-        video_url = payload["url"]
+        video_url = payload.get("url")
         video_id = extract_video_id(video_url)
         response = requests.get(
             f'https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cid%2Cstatus&id={video_id}&key={os.environ.get("API_KEY")}'
@@ -118,26 +118,26 @@ class AddYoutubeVideo(Resource):
         video_json = response.json()
         result = {"notes": []}
         if len(video_json["items"]) == 0:
-            result["notes"].append("No video found, please check the url.")
+            result.get("notes").append("No video found, please check the url.")
             return result, 404
         else:
-            video = video_json["items"][0]
+            video = video_json.get("items")[0]
 
         raw_video_duration = video["contentDetails"]["duration"].split("T")[1]
 
         video_data = {
-            "title": video["snippet"]["title"],
+            "title": video.get("snippet", {}).get("title"),
             "url": video_url,
-            "preview_url": video["snippet"]["thumbnails"]["standard"]["url"],
-            "date_published": video["snippet"]["publishedAt"].split("T")[0],
+            "preview_url": video.get("snippet",{}).get("thumbnails",{}).get("standard",{}).get("url"),
+            "date_published": video.get("snippet",{}).get("publishedAt").split("T")[0],
             "source": "YouTube",
-            "channel": video["snippet"]["channelTitle"],
-            "duration": yt_duration_to_seconds(video["contentDetails"]["duration"]),
+            "channel": video.get("snippet",{}).get("channelTitle"),
+            "duration": yt_duration_to_seconds(video.get("contentDetails",{}).get("duration")),
             "archived": False,
             "free_to_reuse": (
                 True
-                if video["status"]["license"] == "creativeCommon"
-                else not video["contentDetails"]["licensedContent"]
+                if video.get("status",{}).get("license") == "creativeCommon"
+                else not video.get("contentDetails",{}).get("licensedContent")
             ),
             "authorized_to_reuse": False,
         }
@@ -146,24 +146,24 @@ class AddYoutubeVideo(Resource):
 
         if validation_result is not None:
             return validation_result
-        url = video_data["url"]
+        url = video_data.get("url")
         existing_video = VideoDAO.find_video_by_url(url)
 
         if existing_video:
-            video_data["date_published"] = datetime.strptime(
-                video_data["date_published"], "%Y-%m-%d"
+            video_data.get("date_published") = datetime.strptime(
+                video_data.get("date_published"), "%Y-%m-%d"
             )
             existing_video.update(video_data)
             video = existing_video
         else:
             video = VideoDAO.create_video(
-                video_data["title"],
-                video_data["url"],
-                video_data["preview_url"],
-                datetime.strptime(video_data["date_published"], "%Y-%m-%d"),
-                video_data["source"],
-                video_data["channel"],
-                video_data["duration"],
+                video_data.get("title"),
+                video_data.get("url"),
+                video_data.get("preview_url"),
+                datetime.strptime(video_data.get("date_published"), "%Y-%m-%d"),
+                video_data.get("source"),
+                video_data.get("channel"),
+                video_data.get("duration"),
                 video_data.get("archived"),
                 video_data.get("free_to_reuse"),
                 video_data.get("authorized_to_reuse"),
@@ -190,7 +190,7 @@ class VideoSections(Resource):
         validation_result = validate_video_sections_data(data)
         if validation_result:
             return validation_result, 400
-        section_ids = data["sections"]
+        section_ids = data.get("sections")
         sections = SectionDAO.find_sections_by_ids(section_ids)
         note = ""
         if sections.count() != len(section_ids):

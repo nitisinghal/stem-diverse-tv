@@ -32,7 +32,7 @@ class Section(Resource):
         validation_result = validate_section_data(data)
         if validation_result is not None:
             return validation_result
-        title, category_title = data["title"], data["category"]
+        title, category_title = data.get("title"), data.get("category")
         existing_section = SectionDAO.find_section_by_title(title)
         if existing_section is not None:
             return SECTION_ALREADY_EXISTS, 400
@@ -67,7 +67,7 @@ class UpdateSection(Resource):
         validation_result = validate_updatable_section_data(data)
         if validation_result is not None:
             return validation_result
-        if data["title"] == section.title:
+        if data.get("title") == section.title:
             return SECTION_TITLE_NOT_UPDATED, 400
         updated_section = SectionDAO.update_section(section, **data)
         return map_to_dto(updated_section), 200

@@ -27,7 +27,7 @@ class RegisterUser(Resource):
     @user_ns.expect(login_user_model)
     def post(self):
         data = request.json
-        email = data["email"]
-        password = data["password"]
+        email = data.get("email")
+        password = data.get("password")
         login_response = UserDAO.authenticate(email, password)
         return login_response

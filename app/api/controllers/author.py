@@ -29,8 +29,8 @@ class AuthorList(Resource):
         if validate_result != {}:
             return validate_result, 400
 
-        name = data["name"]
-        profile_image = data["profile_image"]
+        name = data.get("name")
+        profile_image = data.get("profile_image")
         existing_author = AuthorModel.find_by_name(name)
 
         if existing_author:

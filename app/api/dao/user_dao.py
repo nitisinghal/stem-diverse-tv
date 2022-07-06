@@ -12,11 +12,11 @@ class UserDAO:
 
     @staticmethod
     def create_user(data: Dict[str, str]):
-        name = data["name"]
-        username = data["username"]
-        email = data["email"]
-        password = data["password"]
-        terms_and_conditions_checked = data["terms_and_conditions_checked"]
+        name = data.get("name")
+        username = data.get("username")
+        email = data.get("email")
+        password = data.get("password")
+        terms_and_conditions_checked = data.get("terms_and_conditions_checked")
 
         existing_user = UserModel.find_by_username(username)
         if existing_user:
@@ -78,10 +78,10 @@ class UserDAO:
         json_response = json.loads(res.text)
 
         if "error" in json_response.keys():
-            error_message = json_response["error"]
+            error_message = json_response.get("error")
             if error_message["message"] == "INVALID_PASSWORD":
                 return {"message": "Password is incorrect"}, 401
             else:
-                return {"message": error_message["message"]}, 401
+                return {"message": error_message.get("message")}, 401
 
         return json_response, 200
